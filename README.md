@@ -12,5 +12,5 @@ To run the adder example, or any of the examples for that matter, you first need
 ## Simulating the Counter
 ```bash
 $stack run clash -- src/Counter.hs -main-is Counter -o out/Counter
-$./out/Adder
+$./out/Counter
 ```
