@@ -80,6 +80,7 @@ library
   hs-source-dirs: src
   exposed-modules:
     Counter
+    Blinky
   default-language: Haskell2010
 
 -- Builds the executable 'clash', with simple project in scope

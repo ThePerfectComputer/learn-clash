@@ -14,3 +14,8 @@ To run the adder example, or any of the examples for that matter, you first need
 $stack run clash -- src/Counter.hs -main-is Counter -o out/Counter
 $./out/Counter
 ```
+
+## Simulating the Blinker
+```bash
+stack run clash -- src/Blinky.hs -main-is Blinky.main -o out/Blinky
+```
