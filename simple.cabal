@@ -7,6 +7,7 @@ maintainer:          John Smith <john@example.com>
 
 common common-options
   default-extensions:
+    NumericUnderscores
     BangPatterns
     BinaryLiterals
     ConstraintKinds

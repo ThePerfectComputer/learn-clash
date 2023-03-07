@@ -11,7 +11,7 @@ To run the adder example, or any of the examples for that matter, you first need
 
 ## Simulating the Counter
 ```bash
-$stack run clash -- src/Counter.hs -main-is Counter -o out/Counter
+$stack run clastack  -- src/Counter.hs -main-is Counter -o out/Counter
 $./out/Counter
 ```
 
@@ -19,3 +19,12 @@ $./out/Counter
 ```bash
 stack run clash -- src/Blinky.hs -main-is Blinky.main -o out/Blinky
 ```
+
+## Programming The ULX3S FPGA
+
+```bash
+cd ulx3s/
+TOP_ENTITY_MODULE=Blinky make
+```
+
+The FPGA should now be blinking.
