@@ -82,6 +82,7 @@ library
   exposed-modules:
     Counter
     Blinky
+    BlinkyCount
   default-language: Haskell2010
 
 -- Builds the executable 'clash', with simple project in scope

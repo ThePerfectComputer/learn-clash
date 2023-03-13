@@ -14,6 +14,7 @@ blinky toggle_period =
         bitToBool :: Bool -> BitVector 1
         bitToBool bit = pack bit
 
+sim_results :: [BitVector 8]
 sim_results = sampleN @System 64 $ blinky $ SNat @2
 
 

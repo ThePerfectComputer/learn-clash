@@ -28,3 +28,10 @@ TOP_ENTITY_MODULE=Blinky make
 ```
 
 The FPGA should now be blinking.
+
+To get the FPGA to count from 0 to 255 cyclically, do:
+
+```bash
+cd ulx3s/
+TOP_ENTITY_MODULE=BlinkyCount make
+```
