@@ -35,6 +35,7 @@ common common-options
     TypeOperators
     ViewPatterns
     FlexibleContexts
+    MagicHash
 
     -- TemplateHaskell is used to support convenience functions such as
     -- 'listToVecTH' and 'bLit'.
@@ -83,6 +84,7 @@ library
     Counter
     Blinky
     BlinkyCount
+    Util
   default-language: Haskell2010
 
 -- Builds the executable 'clash', with simple project in scope
