@@ -50,7 +50,7 @@ deserializer :: forall n dom . (HiddenClockResetEnable dom, KnownNat n) =>
              Signal dom Bit ->
              SNat n ->
              Signal dom (Maybe (BitVector 8))
-deserializer sigBitIn nTickFTDIPeriod =   captureDeserializerReg
+deserializer sigBitIn ftdiClockPeriod =   captureDeserializerReg
                                       <$> ftdiStateReg
                                       <*> deserializerReg
   where captureDeserializerReg :: SerializerState ->
@@ -62,7 +62,7 @@ deserializer sigBitIn nTickFTDIPeriod =   captureDeserializerReg
         sigBitInFalling :: Signal dom Bool
         sigBitInFalling = isFalling 0 sigBitIn
 
-        ftdiClock = mkFTDIClock ftdiClockEn nTickFTDIPeriod
+        ftdiClock = mkFTDIClock ftdiClockEn ftdiClockPeriod
           where ftdiClockEn = (/= IDLE) <$> ftdiStateReg
 
         deserializerReg  :: Signal dom (BitVector 8)
