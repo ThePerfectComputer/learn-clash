@@ -2,6 +2,7 @@ module RS232(topEntity, main) where
 import qualified Data.List as List
 import Util((.<<+))
 import Clash.Prelude
+import Clash.Annotations.SynthesisAttributes (Attr(BoolAttr))
 
 data SerializerState = IDLE | START | DATA (Index 8) | PARITY | STOP
   deriving (Generic, Show, Eq, NFDataX)
@@ -16,12 +17,18 @@ isHalfCycle (Running cnt) = cnt == halfMaxVal
   where halfMaxVal = div (maxBound :: Index n) 2
 isHalfCycle NotRunning    = False
 
-ftdiClock :: forall n dom . HiddenClockResetEnable dom =>
+isFullCycle :: forall n . KnownNat n =>
+               1 <= n =>
+               FTDIClockState n -> Bool
+isFullCycle (Running cnt) = cnt == (maxBound :: Index n)
+isFullCycle NotRunning    = False
+
+mkFTDIClock :: forall n dom . HiddenClockResetEnable dom =>
              (1 <= n) =>
              Signal dom Bool ->
              SNat n ->
              Signal dom (FTDIClockState n)
-ftdiClock en SNat = sig
+mkFTDIClock en SNat = sig
   where sig = register NotRunning (sig' <$> en <*> sig)
         sig' :: Bool -> FTDIClockState n -> FTDIClockState n
         sig' False _            = NotRunning
@@ -32,35 +39,63 @@ predicatedDeSerialize :: SerializerState ->
                          BitVector 8 ->
                          Bit ->
                          BitVector 8
-predicatedDeSerialize START _ _                = 0
-predicatedDeSerialize IDLE  _ _                = 0
-predicatedDeSerialize (DATA _)bitVec8In bitIn  = bitVec8In .<<+ bitIn
-predicatedDeSerialize STOP   bitVec8In _       = bitVec8In
-predicatedDeSerialize PARITY bitVec8In _       = bitVec8In
+predicatedDeSerialize START _ _               = 0
+predicatedDeSerialize IDLE  _ _               = 0
+predicatedDeSerialize (DATA _)bitVec8In bitIn = bitVec8In .<<+ bitIn
+predicatedDeSerialize STOP   bitVec8In _      = bitVec8In
+predicatedDeSerialize PARITY bitVec8In _      = bitVec8In
 
-slowCounter :: HiddenClockResetEnable dom 
-            => 1 <= n
-            => SNat n
-            -> Signal dom (BitVector 8)
-slowCounter incr_period = pack <$> count
-  where
-    count = regEn (0 :: Signed 8)
-                  (riseEvery incr_period)
-                  (count + 1)
+deserializer :: forall n dom . (HiddenClockResetEnable dom, KnownNat n) =>
+             (1 <= n) =>
+             Signal dom Bit ->
+             SNat n ->
+             Signal dom (Maybe (BitVector 8))
+deserializer sigBitIn nTickFTDIPeriod =   captureDeserializerReg
+                                      <$> ftdiStateReg
+                                      <*> deserializerReg
+  where captureDeserializerReg :: SerializerState ->
+                               BitVector 8 ->
+                               Maybe (BitVector 8)
+        captureDeserializerReg STOP bitVector  = Just bitVector
+        captureDeserializerReg _    _          = Nothing
 
-clockDivider :: forall n dom. HiddenClockResetEnable dom
-  => 1 <= n
-  => SNat n
-  -> Signal dom (BitVector 1)
-clockDivider SNat =
-  let cntr = register (0 :: Index n) $ satSucc SatWrap <$> cntr
-  in register 0 $ pack <$> (cntr .==. 0)
+        sigBitInFalling :: Signal dom Bool
+        sigBitInFalling = isFalling 0 sigBitIn
 
-sim_results = sampleN @System 64 $ slowCounter $ SNat @2
+        ftdiClock = mkFTDIClock ftdiClockEn nTickFTDIPeriod
+          where ftdiClockEn = (/= IDLE) <$> ftdiStateReg
 
-serial_loopback :: HiddenClockResetEnable dom => 
-                   Signal dom (BitVector 1) ->
-                   Signal dom (BitVector 1)
+        deserializerReg  :: Signal dom (BitVector 8)
+        deserializerReg  = register (0 :: BitVector 8) $  predicatedDeSerialize 
+                                                      <$> ftdiStateReg 
+                                                      <*> deserializerReg 
+                                                      <*> sigBitIn
+
+        ftdiStateReg :: Signal dom SerializerState
+        ftdiStateReg = register IDLE $  ftdiStateReg'
+                                    <$> sigBitInFalling
+                                    <*> ftdiClock
+                                    <*> ftdiStateReg
+
+        ftdiStateReg' :: Bool ->              -- sigBitInIsFalling
+                         FTDIClockState n ->  -- ftdiClockState
+                         SerializerState ->   -- serializerState
+                         SerializerState
+        ftdiStateReg' sigBitInIsFalling ftdiClockState serializerState = 
+          case serializerState of
+            IDLE   | sigBitInIsFalling                      -> START
+            START  | ftdiClockAdvancing                     -> DATA 0
+            DATA n | ftdiClockAdvancing && (n < maxBound)   -> DATA (n + 1)
+                   | ftdiClockAdvancing && (n == maxBound)  -> PARITY
+            PARITY | ftdiClockAdvancing                     -> STOP
+            STOP   | ftdiClockAdvancing                     -> IDLE
+            _                                               -> serializerState
+            where ftdiClockAdvancing = isFullCycle ftdiClockState
+
+
+serial_loopback :: HiddenClockResetEnable dom =>
+                   Signal dom (Bit) ->
+                   Signal dom (Bit)
 serial_loopback serial_in = register 0 serial_in
 
 -- https://github.com/clash-lang/clash-compiler/blob/master/examples/Blinker.hs#L20
@@ -71,9 +106,9 @@ serial_loopback serial_in = register 0 serial_in
                 PortName "ftdi_txd"],
     t_output =  PortName "ftdi_rxd" }) #-}
 {-# NOINLINE topEntity #-}
-topEntity :: Clock System -> 
-             Signal System (BitVector 1) ->
-             Signal System (BitVector 1)
+topEntity :: Clock System ->
+             Signal System (Bit) ->
+             Signal System (Bit)
 topEntity clock serial_in =
   exposeClockResetEnable
     (serial_loopback serial_in)
@@ -85,4 +120,3 @@ topEntity clock serial_in =
 main :: IO ()
 main = do
   putStrLn "Simulating Blinky Counter"
-  print $ List.zip [0..] sim_results
