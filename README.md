@@ -53,4 +53,17 @@ to parity bits and or stop bits - at sufficiently high BAUD,
 this may become important - will investigate later.
 
 Eventually - screen's behavior won't matter so much as I'll be
-using pyserial...
+using pySerial...
+
+# TODO
+ - [ ] make serializer
+ - [ ] make loopback
+ - [ ] take a look at Clash protocols
+ - [ ] make FIFO with good interface
+ - [ ] add averaging windowed-sample to loopback FTDI SERDES
+ - [ ] register comparators for clockAdvancing and 
+       sample at half cycle
+ - [ ] update FTDI SERDES loopback to use FIFO
+ - [ ] build SDRAM controller
+ - [ ] write-test SDRAM over UART stream
+ - [ ] build user-space PPC CPU
