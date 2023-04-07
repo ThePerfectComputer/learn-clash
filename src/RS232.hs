@@ -1,6 +1,6 @@
 module RS232(topEntity, main) where
 import qualified Data.List as List
-import Util((.<<+))
+import Util((+>>.))
 import Clash.Prelude
 import Clash.Annotations.SynthesisAttributes (Attr(BoolAttr))
 
@@ -14,7 +14,7 @@ isHalfCycle :: forall n . KnownNat n =>
                1 <= n =>
                FTDIClockState n -> Bool
 isHalfCycle (Running cnt) = cnt == halfMaxVal
-  where halfMaxVal = div (maxBound :: Index n) 2
+  where halfMaxVal        = div (maxBound :: Index n) 2
 isHalfCycle NotRunning    = False
 
 isFullCycle :: forall n . KnownNat n =>
@@ -24,10 +24,10 @@ isFullCycle (Running cnt) = cnt == (maxBound :: Index n)
 isFullCycle NotRunning    = False
 
 mkFTDIClock :: forall n dom . HiddenClockResetEnable dom =>
-             (1 <= n) =>
-             Signal dom Bool ->
-             SNat n ->
-             Signal dom (FTDIClockState n)
+               (1 <= n) =>
+               Signal dom Bool ->
+               SNat n ->
+               Signal dom (FTDIClockState n)
 mkFTDIClock en SNat = sig
   where sig = register NotRunning (sig' <$> en <*> sig)
         sig' :: Bool -> FTDIClockState n -> FTDIClockState n
@@ -35,15 +35,21 @@ mkFTDIClock en SNat = sig
         sig' True NotRunning    = Running 0
         sig' True (Running val) = Running $ satSucc SatWrap val
 
-predicatedDeSerialize :: SerializerState ->
-                         BitVector 8 ->
-                         Bit ->
-                         BitVector 8
-predicatedDeSerialize START _ _               = 0
-predicatedDeSerialize IDLE  _ _               = 0
-predicatedDeSerialize (DATA _)bitVec8In bitIn = bitVec8In .<<+ bitIn
-predicatedDeSerialize STOP   bitVec8In _      = bitVec8In
-predicatedDeSerialize PARITY bitVec8In _      = bitVec8In
+predicatedDeSerialize ::  forall n . KnownNat n =>
+                          1 <= n =>
+                          SerializerState ->
+                          BitVector 8 ->
+                          FTDIClockState n ->
+                          Bit ->
+                          BitVector 8
+predicatedDeSerialize serializerState bitVec8In ftdiClock bitIn  = 
+  case serializerState of
+    IDLE -> 0
+    START -> 0
+    DATA _ | (isHalfCycle ftdiClock) -> bitIn +>>. bitVec8In
+           | otherwise -> bitVec8In
+    STOP  -> bitVec8In
+    PARITY  -> bitVec8In
 
 deserializer :: forall n dom . (HiddenClockResetEnable dom, KnownNat n) =>
              (1 <= n) =>
@@ -69,6 +75,7 @@ deserializer sigBitIn ftdiClockPeriod =   captureDeserializerReg
         deserializerReg  = register (0 :: BitVector 8) $  predicatedDeSerialize 
                                                       <$> ftdiStateReg 
                                                       <*> deserializerReg 
+                                                      <*> ftdiClock
                                                       <*> sigBitIn
 
         ftdiStateReg :: Signal dom SerializerState
@@ -98,20 +105,36 @@ serial_loopback :: HiddenClockResetEnable dom =>
                    Signal dom (Bit)
 serial_loopback serial_in = register 0 serial_in
 
+reifiedDeserializer :: forall n dom . (HiddenClockResetEnable dom, KnownNat n) =>
+             (1 <= n) =>
+             Signal dom Bit ->
+             SNat n ->
+             Signal dom (BitVector 8)
+reifiedDeserializer sigBitIn ftdiClockPeriod = val
+  where val = register 0 $ val' <$> val <*> deserializerResult
+        val' (currVal :: BitVector 8) (maybeNextVal :: Maybe (BitVector 8)) =
+          case maybeNextVal of
+            Just someVal -> someVal
+            Nothing -> currVal
+        deserializerResult = deserializer sigBitIn ftdiClockPeriod
+        -- reify maybeVal  = case maybeVal of
+        --                     Just val -> val
+        --                     Nothing -> 0
+
 -- https://github.com/clash-lang/clash-compiler/blob/master/examples/Blinker.hs#L20
 {-# ANN topEntity
    (Synthesize{
     t_name = "top",
     t_inputs = [PortName "clk_25mhz",
                 PortName "ftdi_txd"],
-    t_output =  PortName "ftdi_rxd" }) #-}
+    t_output =  PortName "led" }) #-}
 {-# NOINLINE topEntity #-}
 topEntity :: Clock System ->
              Signal System (Bit) ->
-             Signal System (Bit)
+             Signal System (BitVector 8)
 topEntity clock serial_in =
   exposeClockResetEnable
-    (serial_loopback serial_in)
+    (reifiedDeserializer serial_in $ SNat @2604)
     clock
     resetGen
     enableGen
