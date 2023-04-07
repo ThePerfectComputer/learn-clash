@@ -43,7 +43,7 @@ to the FPGA LED's, do:
 
 ```bash
 cd ulx3s/
-TOP_ENTITY_MODULE=RS232 make
+TOP_ENTITY_MODULE=TxToLed make
 screen /dev/tty.usbserial-K00027 9600
 ```
 

@@ -8,7 +8,7 @@ TOP_VERILOG_FILE=$(VERILOG_DIR)/top.v
 
 $(TOP_VERILOG_FILE): $(TOP_ENTITY_FILE)
 	$(info generating [${TOP_VERILOG_FILE}])
-	stack run clash -- $(TOP_ENTITY_FILE) --verilog
+	stack run clash -- $(TOP_ENTITY_FILE) -i../src --verilog
 
 $(TOP_ENTITY_MODULE).json: $(TOP_VERILOG_FILE)
 	yosys \
