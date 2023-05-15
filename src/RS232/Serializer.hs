@@ -25,7 +25,8 @@ serializer maybeByteIn ftdiClockPeriod =
 
     out' :: State -> BitVector 8 -> PipeOut
     out' IDLE _               = PipeOut{dataOut = 1, busy = False}
-    out' (DATA n) sampledByte = PipeOut{dataOut = sampledByte ! (7 - n),
+    out' START _              = PipeOut{dataOut = 0, busy = False}
+    out' (DATA n) sampledByte = PipeOut{dataOut = sampledByte ! n,
                                         busy = True}
     out' _        _           = PipeOut{dataOut = 1, busy = False}
 

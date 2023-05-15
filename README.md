@@ -50,13 +50,17 @@ stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
 screen /dev/tty.usbserial-K00027 9600
 ```
 
-Note that you may need to change the actual tty device
-according to your system. I'm not sure if screen defaults
-to parity bits and or stop bits - at sufficiently high BAUD,
-this may become important - will investigate later.
+## Loopback Over Serial
+```bash
+cd ulx3s/
+TOP_ENTITY_MODULE=Loopback make
+# two stop bits and no parity bits
+stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
+screen /dev/tty.usbserial-K00027 9600
+```
 
-Eventually - screen's behavior won't matter so much as I'll be
-using pySerial...
+You should now be able to type characters and see them.
+
 
 # Needed Utilities
 What if I just use FIFOs everywhere? Is the latency too much to handle?
