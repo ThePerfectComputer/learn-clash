@@ -35,5 +35,5 @@ sim_results = sampleN @System 4 counter
 
 main :: IO ()
 main = do
-  putStrLn "Simulating Adder"
+  putStrLn "Simulating Counter"
   putStrLn $ show sim_results

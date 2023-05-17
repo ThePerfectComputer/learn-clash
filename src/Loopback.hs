@@ -5,7 +5,8 @@
 -- | stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
 -- | screen /dev/tty.usbserial-K00027 9600
 -- | ```
--- | You should now be able to type characters and see them.
+-- | You should now be able to type characters and see them in
+-- | the terminal, as well as displayed on the FPGA LEDs.
 module Loopback(topEntity) where
 import RS232.Deserializer(deserializer)
 import RS232.Serializer(serializer, PipeOut(dataOut))
