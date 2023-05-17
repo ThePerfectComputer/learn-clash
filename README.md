@@ -1,4 +1,3 @@
-<!-- omit in toc -->
 # Getting Started
 This works with ghc 9.0.2
 
@@ -6,61 +5,9 @@ The clash compiler is basically a modified version of ghc designed to allow for 
 
 To run the adder example, or any of the examples for that matter, you first need to buld the ``clash`` compiler. You can build the clash compiler with ``stack build``.
 
-# Simulating
-## Counter
-```bash
-stack run clash  -- src/Counter.hs -main-is Counter -o out/Counter
-$./out/Counter
-```
-
-## Blinker
-```bash
-stack run clash -- src/Blinky.hs -main-is Blinky.main -o out/Blinky
-```
-
-# Programming The ULX3S FPGA
-
-## Blinky
-
-```bash
-cd ulx3s/
-TOP_ENTITY_MODULE=Blinky make
-```
-
-The FPGA should now be blinking.
-
-## Counter
-To get the FPGA to count from 0 to 255 cyclically, do:
-
-```bash
-cd ulx3s/
-TOP_ENTITY_MODULE=BlinkyCount make
-```
-
-## Serial over USB
-To type a character and see its ASCII representation displayed
-to the FPGA LED's, run the following, making sure to change
-the path to you ULX3X's FTDI device as necessary:
-
-```bash
-cd ulx3s/
-TOP_ENTITY_MODULE=TxToLed make
-# two stop bits and no parity bits
-stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
-screen /dev/tty.usbserial-K00027 9600
-```
-
-## Loopback Over Serial
-```bash
-cd ulx3s/
-TOP_ENTITY_MODULE=Loopback make
-# two stop bits and no parity bits
-stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
-screen /dev/tty.usbserial-K00027 9600
-```
-
-You should now be able to type characters and see them.
-
+You can find the following top level files in ``./src``
+as well as instructions for running them in the top level files
+themselves.
 
 # Needed Utilities
 What if I just use FIFOs everywhere? Is the latency too much to handle?

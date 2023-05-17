@@ -11,8 +11,6 @@ import qualified Hedgehog as H
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
 
-import Example.Project (plus)
-
 prop_plusIsCommutative :: H.Property
 prop_plusIsCommutative = H.property $ do
   a <- H.forAll (Gen.integral (Range.linear minBound maxBound))

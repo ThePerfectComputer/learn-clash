@@ -1,3 +1,12 @@
+-- | You can program the FPGA with the following.
+-- | 
+-- | $cd ulx3s/
+-- | $TOP_ENTITY_MODULE=Blinky make
+-- | The FPGA should now be blinking.
+-- | 
+-- | You can run the main simulation with the following.
+-- | stack run clash -- src/Blinky.hs -main-is Blinky.main
+-- | -o out/Blinky
 module Blinky(topEntity, main) where
 import qualified Data.List as List
 import Clash.Prelude

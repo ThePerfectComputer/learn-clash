@@ -33,4 +33,4 @@ prog: $(TOP_ENTITY_MODULE).bit
 
 .PHONY: clean
 clean:
-	rm -rf *.json *.config *.bit *.d verilog
+	rm -rf *.json *.config *.bit *.d verilog vout

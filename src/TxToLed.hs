@@ -1,3 +1,14 @@
+-- | To type a character and see its ASCII representation displayed
+-- | to the FPGA LED's, run the following, making sure to change
+-- | the path to you ULX3X's FTDI device as necessary:
+-- |
+-- | ```bash
+-- | cd ulx3s/
+-- | TOP_ENTITY_MODULE=TxToLed make
+-- | # two stop bits and no parity bits
+-- | stty -f /dev/tty.usbserial-K00027 -cstopb -parenb
+-- | screen /dev/tty.usbserial-K00027 9600
+-- | ```
 module TxToLed(topEntity) where
 import RS232.Deserializer(deserializer)
 import Clash.Prelude

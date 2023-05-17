@@ -1,11 +1,9 @@
 module RS232.Serializer(serializer, PipeOut(dataOut)) where
 import Clash.Prelude
 
-
 import RS232.State(State(..), mkFtdiStateReg)
 import RS232.FtdiClock(mkFTDIClock)
 import Data.Maybe (isJust, fromMaybe)
-
 data PipeOut = PipeOut { dataOut :: Bit, busy :: Bool}
   deriving (Generic, Show, Eq, NFDataX)
 
