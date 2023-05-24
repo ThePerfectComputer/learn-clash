@@ -1,5 +1,4 @@
--- | $stack run clash  -- src/Counter.hs -main-is Counter -o out/Counter
--- | $./out/Counter
+-- | $make MAIN=Counter
 module Counter (topEntity, main) where
 
 import Clash.Prelude

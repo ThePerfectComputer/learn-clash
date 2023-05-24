@@ -1,4 +1,4 @@
-module RS232.Serializer(serializer, PipeOut(dataOut)) where
+module RS232.Serializer(serializer, PipeOut(dataOut, busy)) where
 import Clash.Prelude
 
 import RS232.State(State(..), mkFtdiStateReg)

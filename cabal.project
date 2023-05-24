@@ -1,6 +1,9 @@
 packages:
   simple.cabal
 
+packages: .
+builddir: build
+
 write-ghc-environment-files: always
 
 -- Eliminates the need for `--enable-tests`, which is needed for HLS.

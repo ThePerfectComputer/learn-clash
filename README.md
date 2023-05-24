@@ -14,10 +14,19 @@ themselves.
  - [ ] Fallthrough FIFO
 
 # TODO
- - [ ] make serializer
- - [ ] make loopback
- - [ ] take a look at Clash protocols
+ - [ ] turn off derive generics
+ - [ ] update commands to use flags that prevent ghc
+       intermediate outputs from littering source tree
+ - [ ] create simple writing UART example, which I can 
+       interactively debug step by step
+ - [ ] learn to use trace and jupyter
+ - [ ] learn to debug with generic pretty prints
+ - [ ] solder header onto ULX3S
+ - [ ] debug ULX3S with scope
+ - [ ] draw conclusions on feasibility of debugging
+       without VCD viewer
  - [ ] make FIFO with good interface
+ - [ ] take a look at Clash protocols
  - [ ] add averaging windowed-sample to loopback FTDI SERDES
  - [ ] register comparators for clockAdvancing and 
        sample at half cycle

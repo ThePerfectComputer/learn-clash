@@ -8,7 +8,13 @@ TOP_VERILOG_FILE=$(VERILOG_DIR)/top.v
 
 $(TOP_VERILOG_FILE): $(TOP_ENTITY_FILE)
 	$(info generating [${TOP_VERILOG_FILE}])
-	stack run clash -- $(TOP_ENTITY_FILE) -i../src --verilog
+	stack run clash -- \
+	$(TOP_ENTITY_FILE) \
+	-i../src \
+	--verilog \
+	-odir=odir/ \
+	-hidir=hidir/
+
 
 $(TOP_ENTITY_MODULE).json: $(TOP_VERILOG_FILE)
 	yosys \
@@ -33,4 +39,4 @@ prog: $(TOP_ENTITY_MODULE).bit
 
 .PHONY: clean
 clean:
-	rm -rf *.json *.config *.bit *.d verilog vout
+	rm -rf *.json *.config *.bit *.d verilog vout odir hdir
